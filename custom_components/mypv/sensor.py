@@ -52,27 +52,32 @@ class MypvDevice(CoordinatorEntity):
         return f"{self._name} {self._sensor}"
 
     @property
-    def state(self):
-        """Return the state of the device."""
-        try:
-            state = self.coordinator.data[self._data_source][self.type]
+def state(self):
+    """Return the state of the device."""
+    try:
+        state = self.coordinator.data[self._data_source][self.type]
+        if state is not None:
             if self.type == "power_act":
                 relOut = int(self.coordinator.data[self._data_source]["rel1_out"])
                 loadNom = int(self.coordinator.data[self._data_source]["load_nom"])
                 state = (relOut * loadNom) + int(state)
             self._last_value = state
-        except Exception as ex:
-            _LOGGER.error(ex)
-            state = self._last_value
-        if state is None:
-            return state
-        if self._unit_of_measurement == FREQUENCY_HERTZ:
-            return state / 1000
-        if self._unit_of_measurement == TEMP_CELSIUS:
-            return state / 10
-        if self._unit_of_measurement == ELECTRIC_CURRENT_AMPERE:
-            return state / 10
+    except Exception as ex:
+        _LOGGER.error(ex)
+        state = self._last_value
+
+    if state is None:
         return state
+
+    if self._unit_of_measurement == FREQUENCY_HERTZ:
+        return state / 1000
+    if self._unit_of_measurement == TEMP_CELSIUS:
+        return state / 10
+    if self._unit_of_measurement == ELECTRIC_CURRENT_AMPERE:
+        return state / 10
+
+    return state
+
 
     @property
     def unit_of_measurement(self):
